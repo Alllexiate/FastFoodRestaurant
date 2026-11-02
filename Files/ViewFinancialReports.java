@@ -1,32 +1,78 @@
-package viewfinancialreports;
 
-import java.util.Scanner;
+package foodordering;
 
-public class ViewFinancialReports {
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-    static Scanner input = new Scanner(System.in);
+public class FinancialReport {
 
-    public static void main(String[] args) {
+    public static void showReport() {
 
-        System.out.println("===== FINANCIAL REPORT =====");
+        int completed = 0;
+        int pending = 0;
 
-        System.out.print("Enter Total Sales: PHP ");
-        double totalSales = input.nextDouble();
+        double revenue = 0;
+        double pendingValue = 0;
 
-        System.out.print("Enter Completed Sales: ");
-        int completedSales = input.nextInt();
+        Map<String, double[]> perItem =
+            new LinkedHashMap<>();
 
-        System.out.printf("Total Sales: PHP %.2f%n", totalSales);
-        System.out.println("Completed Sales: " + completedSales);
+        for (Order o : FileStorage.orders) {
 
-        double averageSale = 0.0;
+            if (o.getStatus() == Order.Status.READY_TO_SERVE) {
 
-        if (completedSales > 0) {
-            averageSale = totalSales / completedSales;
+                completed++;
+                revenue += o.getTotal();
+
+                for (Order.Line l : o.getLines()) {
+
+                    double[] totals = perItem.get(l.name);
+
+                    if (totals == null) {
+                        totals = new double[2];
+                        perItem.put(l.name, totals);
+                    }
+
+                    totals[0] += l.qty;
+                    totals[1] += l.subtotal();
+                }
+
+            } else {
+                pending++;
+                pendingValue += o.getTotal();
+            }
         }
 
-        System.out.printf("Average Sale: PHP %.2f%n", averageSale);
+        System.out.println("\n===== FINANCIAL REPORT =====");
 
-        System.out.println("============================");
+        System.out.println("Total orders: "
+            + FileStorage.orders.size());
+
+        System.out.println("Completed orders: " + completed);
+        System.out.println("Pending orders: " + pending);
+
+        System.out.printf("Revenue: %.2f%n", revenue);
+        System.out.printf("Pending value: %.2f%n", pendingValue);
+
+        if (!perItem.isEmpty()) {
+
+            System.out.println("\nSales per item:");
+
+            System.out.printf("%-22s %8s %12s%n",
+                "Item", "Qty", "Revenue");
+
+            System.out.println("--------------------------------------------");
+
+            for (Map.Entry<String, double[]> e :
+                    perItem.entrySet()) {
+
+                System.out.printf(
+                    "%-22s %8d %12.2f%n",
+                    e.getKey(),
+                    (int) e.getValue()[0],
+                    e.getValue()[1]
+                );
+            }
+        }
     }
 }
