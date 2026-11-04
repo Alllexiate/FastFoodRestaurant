@@ -1,21 +1,19 @@
-package createorders;
+package employee_;
 
 import java.io.*;
 import java.util.*;
 
-public class CreateOrders {
-
-    // Global Parallel Arrays for storing order tracking details 
+public class Employee {
     static int MAX_ORDERS = 50;
     static int[] customerNumbers = new int[MAX_ORDERS];
     static String[] orderReceipts = new String[MAX_ORDERS];
     static int[] orderTotals = new int[MAX_ORDERS];
     static int[] statusCodes = new int[MAX_ORDERS]; // 1 = Preparing, 2 = Ready to Serve, 3 = Delayed, 4 = Cancelled
     
-    static int orderCounter = 0;      // Auto-incrementing customer ID
-    static int totalActiveOrders = 0; // Number of orders currently in memory
+    static int orderCounter = 0;     
+    static int totalActiveOrders = 0; 
 
-    // 1. FEATURE: Read Order File using Scanner & Confirm
+    // Read Order File using Scanner & Confirm
     public static void readAndConfirmOrder(Scanner sc) {
         String fileName = "orders.txt"; 
         File file = new File(fileName);
@@ -29,23 +27,21 @@ public class CreateOrders {
         System.out.println("\n---------------------------------------------------------");
         System.out.println("             READING ORDER DETAILS FROM FILE             ");
         System.out.println("---------------------------------------------------------");
-
-        String itemLinesOnly = ""; // Will accumulate formatted item rows
+        
+        String itemLinesOnly = "";
         double totalSum = 0;
         int totalCalories = 0;
         int amountPaid = 0;
         int change = 0;
 
-        // Reading file using Scanner
         try (Scanner fileScanner = new Scanner(file)) {
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
-                System.out.println(line); // Display raw line from input text file
+                System.out.println(line); 
 
                 String trimmed = line.trim();
                 String lower = trimmed.toLowerCase();
 
-                // Extract Subtotal / Total Amount Due if explicitly written in the file
                 if ((lower.startsWith("subtotal") || lower.startsWith("total amount due")) && trimmed.contains("PHP")) {
                     try {
                         String pricePart = trimmed.substring(trimmed.indexOf("PHP") + 3).trim();
@@ -53,31 +49,24 @@ public class CreateOrders {
                     } catch (Exception e) { }
                 }
 
-                // Extract Cash Tendered directly from file
                 if ((lower.contains("cash tendered") || lower.contains("cash paid") || lower.startsWith("cash")) && trimmed.contains("PHP")) {
                     try {
                         String cashPart = trimmed.substring(trimmed.indexOf("PHP") + 3).trim();
                         amountPaid = (int) Math.round(Double.parseDouble(cashPart));
                     } catch (Exception e) { }
                 }
-
-                // Extract Change directly from file
                 if (lower.startsWith("change") && trimmed.contains("PHP")) {
                     try {
                         String changePart = trimmed.substring(trimmed.indexOf("PHP") + 3).trim();
                         change = (int) Math.round(Double.parseDouble(changePart));
                     } catch (Exception e) { }
                 }
-
-                // Extract Item Rows using simple .split() 
                 String[] rawParts;
                 if (trimmed.contains("|")) {
                     rawParts = trimmed.split("\\|");
                 } else {
-                    rawParts = trimmed.split(" "); // Standard space delimiter 
+                    rawParts = trimmed.split(" "); 
                 }
-
-                // Filter out empty elements caused by multiple spaces using a basic for loop
                 String[] parts = new String[rawParts.length];
                 int partCount = 0;
                 for (int i = 0; i < rawParts.length; i++) {
@@ -91,10 +80,8 @@ public class CreateOrders {
                     try {
                         int qty = Integer.parseInt(parts[0]);
                         
-                        // Price is located at the second to last position when space-separated
                         double price = Double.parseDouble(parts[partCount - 2].replace("PHP", "").trim());
-                        
-                        // Reconstruct Item Name safely
+
                         String itemName = "";
                         if (trimmed.contains("|")) {
                             itemName = parts[1];
@@ -103,16 +90,13 @@ public class CreateOrders {
                                 itemName += parts[k] + " ";
                             }
                             itemName = itemName.trim();
-                        }
-                        
+                        }  
                         if (totalSum == 0) {
                             totalSum += (price * qty);
                         }
-
                         // Build clean formatted item row
                         itemLinesOnly += String.format(" %-4d| %-35s | PHP %.2f\n", qty, itemName, price * qty);
                     } catch (NumberFormatException e) {
-                        // Ignores header rows like "QTY ITEM DESCRIPTION PRICE TOTAL"
                     }
                 }
             }
@@ -120,11 +104,8 @@ public class CreateOrders {
             System.out.println("Unable to read file.");
             return;
         }
-
-        // Type casting double to int 
         int grandTotal = (int) Math.round(totalSum);
-
-        // Fallback safety if Cash Tendered wasn't specified in file
+        
         if (amountPaid == 0) {
             amountPaid = grandTotal;
         }
@@ -143,12 +124,9 @@ public class CreateOrders {
             System.out.println(">> Order cancelled before confirmation.");
             return;
         }
-
-        // Assign Customer Number
         orderCounter++;
         int currentCustomerNo = orderCounter;
 
-        // Build Final Official Receipt String
         String receipt = "";
         receipt += "---------------------------------------------------------\n";
         receipt += "                 Your order number is:                   \n";
@@ -172,14 +150,12 @@ public class CreateOrders {
         receipt += "              Thank you, please come again.              \n";
         receipt += "---------------------------------------------------------\n";
 
-        // Save into global parallel arrays 
         customerNumbers[totalActiveOrders] = currentCustomerNo;
         orderReceipts[totalActiveOrders] = receipt;
         orderTotals[totalActiveOrders] = grandTotal;
         statusCodes[totalActiveOrders] = 1; // 1 = Preparing in Kitchen
         totalActiveOrders++;
 
-        // Save official generated receipt text file
         try {
             String receiptFileName = "Customer_" + currentCustomerNo + "_Receipt.txt";
             FileWriter writer = new FileWriter(receiptFileName);
@@ -192,7 +168,7 @@ public class CreateOrders {
         }
     }
 
-    // 2. FEATURE: View Live Order Status Board 
+    // View Live Order Status Board 
     public static void viewOrderStatus() {
         System.out.println("\n==========================================================================");
         System.out.println("                   FAST & FOODEUS LIVE ORDER STATUS BOARD                ");
@@ -219,14 +195,14 @@ public class CreateOrders {
         System.out.println("==========================================================================\n");
     }
 
-    // 3. FEATURE: Update Order Status + Alert System
+    // Update Order Status + Alert System
     public static void updateOrderStatus(Scanner sc) {
         if (totalActiveOrders == 0) {
             System.out.println("\nNo pending orders to update.");
             return;
         }
 
-        System.out.print("\nEnter Customer Number to update (e.g., 1 for Customer #1): ");
+        System.out.print("\nEnter Customer Number to update: ");
         int targetNum;
         try {
             targetNum = Integer.parseInt(sc.nextLine());
@@ -247,7 +223,6 @@ public class CreateOrders {
             System.out.println("Customer #" + targetNum + " not found.");
             return;
         }
-
         System.out.println("\nCurrent Status for Customer #" + targetNum + ": " + getStatusString(statusCodes[index]));
         System.out.println("[1] Preparing in Kitchen");
         System.out.println("[2] Ready to Serve!");
@@ -274,8 +249,6 @@ public class CreateOrders {
             System.out.println("Invalid status input.");
         }
     }
-
-    // Helper method for resolving status string 
     private static String getStatusString(int statusCode) {
         switch (statusCode) {
             case 1: return "Preparing in Kitchen";
@@ -286,13 +259,12 @@ public class CreateOrders {
         }
     }
 
-    // 4. FEATURE: Cancel or Delete Order (With "Ready to Serve" Protection)
+    // Cancel or Delete Order 
     public static void cancelOrDeleteOrder(Scanner sc) {
         if (totalActiveOrders == 0) {
             System.out.println("\nNo pending orders to manage.");
             return;
         }
-
         System.out.print("\nEnter Customer Number to manage: ");
         int targetNum;
         try {
@@ -301,7 +273,6 @@ public class CreateOrders {
             System.out.println("Invalid input. Customer Number must be an integer.");
             return;
         }
-
         int index = -1;
         for (int i = 0; i < totalActiveOrders; i++) {
             if (customerNumbers[i] == targetNum) {
@@ -309,13 +280,10 @@ public class CreateOrders {
                 break;
             }
         }
-
         if (index == -1) {
             System.out.println("Customer #" + targetNum + " not found.");
             return;
         }
-
-        // PROTECTION CHECK: Cannot cancel/delete if status is 2 ("Ready to Serve!")
         if (statusCodes[index] == 2) {
             System.out.println("\n>> CANNOT CANCEL OR DELETE ORDER!");
             System.out.println(">> Order for Customer #" + targetNum + " is already 'Ready to Serve!'");
