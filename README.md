@@ -27,7 +27,6 @@ A Java console-based application that simulates the basic operations of a fast-f
 ### Customer
 - View available food items
 - Place orders
-- View order status
 
 ## Disclaimer
 This project is intended for educational purposes. Do not use real passwords or personal information in demonstration data.
