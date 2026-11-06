@@ -20,9 +20,10 @@ A Java console-based application that simulates the basic operations of a fast-f
 - View financial reports
 
 ### Employee
-- View pending orders
-- Update orders to Ready to Serve
-- View order details
+- View order details and Confirm
+- View order status
+- Update order details
+- Cancel/Delete Order
 
 ### Customer
 - View available food items
