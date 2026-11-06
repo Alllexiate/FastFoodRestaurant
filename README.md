@@ -6,28 +6,34 @@ A Java console-based application that simulates the basic operations of a fast-f
  ## Features:
 
 ### Admin
-- View user accounts
+- View accounts
 - Add accounts
 - Change account roles
 - Reset passwords
 - Delete accounts
-- View food and order records
+- View menu database
 
 ### Manager
-- Add food items
-- Change prices
-- Apply discounts
-- View financial reports
+- View menu
+- Add food item
+- Set price
+- Set discount
+- Remove food item
+- View financial report
+- Restore default menu items
 
 ### Employee
-- View order details and Confirm
-- View order status
-- Update order details
+- View active orders 
+- Update order status
+- View ready-to-serve orders
 - Cancel/Delete Order
+- Print receipts
+  
 
 ### Customer
-- View available food items
-- Place orders
+- View menu
+- Place order
+- View my orders
 
 ## Disclaimer
 This project is intended for educational purposes. Do not use real passwords or personal information in demonstration data.
